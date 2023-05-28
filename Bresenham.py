@@ -82,7 +82,7 @@ if __name__ == "__main__":
                 done = True
         
         draw_line(screen, (0, 40), (500, 500), green)
-        draw_line(screen, (500, 500), (0, 40), red)
+        draw_line(screen, (300, 150), (350, 350), red)
         pygame.display.update()
     pygame.quit()
 
