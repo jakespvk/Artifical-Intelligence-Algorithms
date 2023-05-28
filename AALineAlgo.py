@@ -14,10 +14,22 @@ def draw_line_aa(surface, start: tuple[int, int], end: tuple[int, int], color):
     steep = abs(y1 - y0) > abs(x1 - x0)
 
     if steep:
-        x0, y0 = x1, y1
+        temp = x0
+        x0 = y0
+        y0 = temp
+
+        temp = x1
+        x1 = y1
+        y1 = temp
+
     if x0 > x1:
-        swap(x0, x1)
-        swap(y0, y1)
+        temp = x0
+        x0 = x1
+        x1 = temp
+
+        temp = y0
+        y0 = y1
+        y1 = temp
 
     dx = x1 - x0
     dy = y1 - y0
@@ -49,15 +61,15 @@ def draw_line_aa(surface, start: tuple[int, int], end: tuple[int, int], color):
     else:
         surface.set_at((xpxl1, ypxl1), 
                        pygame.Color(
-                           (color.r * (rfpart(yend) * xgap)),
-                           (color.g * (rfpart(yend) * xgap)),
-                           (color.b * (rfpart(yend) * xgap))
+                           (int((color.r * (rfpart(yend) * xgap)) / 255)),
+                           (int((color.g * (rfpart(yend) * xgap)) / 255)),
+                           (int((color.b * (rfpart(yend) * xgap)) / 255))
                            ))
         surface.set_at((xpxl1, ypxl1 + 1), 
                        pygame.Color(
-                           (color.r * (fpart(yend) * xgap)),
-                           (color.g * (fpart(yend) * xgap)),
-                           (color.b * (fpart(yend) * xgap))
+                           (int(color.r * (fpart(yend) * xgap) / 255)),
+                           (int(color.g * (fpart(yend) * xgap) / 255)),
+                           (int(color.b * (fpart(yend) * xgap) / 255))
                            ))
     intery = yend + gradient
 
@@ -95,9 +107,34 @@ def draw_line_aa(surface, start: tuple[int, int], end: tuple[int, int], color):
                            ))
 
     if steep:
-        for x in range(xpxl1 + 1, xpxl2):
-            surface.set_at((x, int(intery)), rfpart(intery))
-            surface.set_at((x, int(intery) + 1), fpart(inery))
+        for x in range(xpxl1 + 1, xpxl2, 1):
+            surface.set_at((int(intery), x), 
+                           pygame.Color(
+                               (int(color.r * rfpart(intery))),
+                               (int(color.g * rfpart(intery))),
+                               (int(color.b * rfpart(intery)))
+                               ))
+            surface.set_at((int(intery) + 1, x), 
+                           pygame.Color(
+                               (int(color.r * fpart(intery))),
+                               (int(color.g * fpart(intery))),
+                               (int(color.b * fpart(intery)))
+                               ))
+            intery = intery + gradient
+    else:
+        for x in range(xpxl1 + 1, xpxl2, 1):
+            surface.set_at((x, int(intery)), 
+                           pygame.Color(
+                               (int(color.r * rfpart(intery))),
+                               (int(color.g * rfpart(intery))),
+                               (int(color.b * rfpart(intery)))
+                               ))
+            surface.set_at((x, int(intery) + 1), 
+                           pygame.Color(
+                               (int(color.r * fpart(intery))),
+                               (int(color.g * fpart(intery))),
+                               (int(color.b * fpart(intery)))
+                               ))
             intery = intery + gradient
 
 def draw_line_low(surface, start: tuple[int, int], end: tuple[int, int], slope, intercept, color):
