@@ -61,15 +61,15 @@ def draw_line_aa(surface, start: tuple[int, int], end: tuple[int, int], color):
     else:
         surface.set_at((xpxl1, ypxl1), 
                        pygame.Color(
-                           (int((color.r * (rfpart(yend) * xgap)) / 255)),
-                           (int((color.g * (rfpart(yend) * xgap)) / 255)),
-                           (int((color.b * (rfpart(yend) * xgap)) / 255))
+                           (int(color.r * (rfpart(yend) * xgap))),
+                           (int(color.g * (rfpart(yend) * xgap))),
+                           (int(color.b * (rfpart(yend) * xgap)))
                            ))
         surface.set_at((xpxl1, ypxl1 + 1), 
                        pygame.Color(
-                           (int(color.r * (fpart(yend) * xgap) / 255)),
-                           (int(color.g * (fpart(yend) * xgap) / 255)),
-                           (int(color.b * (fpart(yend) * xgap) / 255))
+                           (int(color.r * (fpart(yend) * xgap))),
+                           (int(color.g * (fpart(yend) * xgap))),
+                           (int(color.b * (fpart(yend) * xgap)))
                            ))
     intery = yend + gradient
 
