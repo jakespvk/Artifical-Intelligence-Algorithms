@@ -15,7 +15,7 @@ class Mesh3D:
     def draw(self):
         for t in self.faces:
             a, b, c, color = t
-            glBegin(GL_LINE_LOOP)
+            glBegin(GL_TRIANGLES)
             glColor3ub(color.r, color.g, color.b)
             glVertex3fv(self.vertices[a])
             glVertex3fv(self.vertices[b])
