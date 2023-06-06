@@ -63,7 +63,11 @@ class Object3D:
 
         # Finish this function to compute (xs, ys). Don't forget that
         # the the positive y-axis goes DOWN in Pygame, but UP in clip space.
-        return (int(clip_vertex.x), int(clip_vertex.y))
+
+        screen_vertex: tuple[int, int] = (
+                int((clip_vertex[0] + 1) / 2) * surface.get_width, (int(surface.get_height - (clip_vertex[1] + 1) / 2) * surface.get_height))
+
+        return (int(clip_vertex[0]), int(clip_vertex[1]))
 
     def draw(self, surface: pygame.Surface, frustum):
         projected = []
@@ -81,3 +85,4 @@ class Object3D:
                 projected[tri[2]],
             )
             primitives.draw_triangle(surface, a, b, c, tri[3])
+
