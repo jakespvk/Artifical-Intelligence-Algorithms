@@ -1,5 +1,6 @@
 from OpenGL.GL import *
 from Mesh3D import Mesh3D
+import math
 import pygame
 import primitives
 
@@ -30,7 +31,42 @@ class Object3D:
         # Remember the correct order of compound transformations:
         # scale; then rotate yaw, rotate pitch, rotate roll; 
         # then translate.
-        return local_vertex
+        
+        x, y, z = local_vertex
+
+        scaled_vertex = (self.scale * x, self.scale * y, self.scale * z)
+
+        x, y, z = scaled_vertex
+
+        # yaw
+        theta = math.radians(self.orientation[0])
+        x = x * math.cos(theta) + z * math.sin(theta)
+        y = y
+        z = z * math.cos(theta) - x * math.sin(theta)
+
+        yaw_vertex = (x, y, z)
+
+        # pitch
+        theta = math.radians(self.orientation[1])
+        x = x
+        y = y * math.cos(theta) - z * math.sin(theta)
+        z = y * math.sin(theta) + z * math.cos(theta)
+
+        # roll
+        theta = math.radians(self.orientation[2])
+        x = x * math.cos(theta) - y * math.sin(theta)
+        y = x * math.sin(theta) + y * math.cos(theta)
+        z = z
+
+        rotated_vertex = (x, y, z)
+
+        # translate
+        x, y, z = rotated_vertex
+        xt, yt, zt = self.position
+
+        #translated_vertex = pygame.Vector3(x + xt, y + yt, z + zt)
+        
+        return rotated_vertex
 
     def world_to_view(self, world_vertex) -> pygame.Vector3:
         """
@@ -51,7 +87,17 @@ class Object3D:
         # Finish this function to compute (xn, yn, zn) by first projecting
         # to the near-plane coordinates (xp, yp, zp), and then interpolating
         # along the clip space 2x2x2 cube.
-        return view_vertex
+        near, far, left, right, bottom, top = frustum
+
+        xp, yp, zp = view_vertex
+
+        xn = 2 * xp / (right - left)
+        yn = 2 * yp / (top - bottom)
+        zn = -0.1
+
+        clip_vertex = pygame.Vector3(xn, yn, zn)
+
+        return clip_vertex
 
     def clip_to_screen(
         self, clip_vertex: pygame.Vector3, surface: pygame.Surface
@@ -65,9 +111,11 @@ class Object3D:
         # the the positive y-axis goes DOWN in Pygame, but UP in clip space.
 
         screen_vertex: tuple[int, int] = (
-                int((clip_vertex[0] + 1) / 2) * surface.get_width, (int(surface.get_height - (clip_vertex[1] + 1) / 2) * surface.get_height))
+                int((clip_vertex[0] + 1) / 2) * surface.get_width(), 
+                (int(surface.get_height() - ((clip_vertex[1] + 1) / 2) * surface.get_height()))
+                )
 
-        return (int(clip_vertex[0]), int(clip_vertex[1]))
+        return ((screen_vertex[0]), (screen_vertex[1]))
 
     def draw(self, surface: pygame.Surface, frustum):
         projected = []
