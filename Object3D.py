@@ -34,14 +34,35 @@ class Object3D:
 
         x, y, z = local_vertex
 
-        #local_vertex = (local_vertex[0] + self.position[0],
-                        #local_vertex[1] + self.position[1],
-                        #local_vertex[2] + self.position[2])
-
+        # SCALE
         x = x * self.scale[0]
         y = y * self.scale[1]
         z = z * self.scale[2]
 
+        # ROTATIONS:
+        
+        # yaw
+        cos = math.cos(self.orientation[1])
+        sin = math.sin(self.orientation[1])
+
+        x = (x * cos) + (z * sin)
+        z = (z * cos) - (x * sin)
+
+        # pitch
+        cos = math.cos(self.orientation[0])
+        sin = math.sin(self.orientation[0])
+
+        y = (y * cos) - (z * sin)
+        z = (y * sin) + (z * cos)
+
+        # roll
+        cos = math.cos(self.orientation[2])
+        sin = math.sin(self.orientation[2])
+
+        x = (x * cos) - (y * sin)
+        y = (x * sin) + (y * cos)
+        
+        # TRANSLATION
         x = x + self.position[0]
         y = y + self.position[1]
         z = z + self.position[2]
