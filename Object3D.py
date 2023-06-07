@@ -31,42 +31,23 @@ class Object3D:
         # Remember the correct order of compound transformations:
         # scale; then rotate yaw, rotate pitch, rotate roll; 
         # then translate.
-        
+
         x, y, z = local_vertex
 
-        scaled_vertex = (self.scale * x, self.scale * y, self.scale * z)
+        #local_vertex = (local_vertex[0] + self.position[0],
+                        #local_vertex[1] + self.position[1],
+                        #local_vertex[2] + self.position[2])
 
-        x, y, z = scaled_vertex
+        x = x * self.scale[0]
+        y = y * self.scale[1]
+        z = z * self.scale[2]
 
-        # yaw
-        theta = math.radians(self.orientation[0])
-        x = x * math.cos(theta) + z * math.sin(theta)
-        y = y
-        z = z * math.cos(theta) - x * math.sin(theta)
-
-        yaw_vertex = (x, y, z)
-
-        # pitch
-        theta = math.radians(self.orientation[1])
-        x = x
-        y = y * math.cos(theta) - z * math.sin(theta)
-        z = y * math.sin(theta) + z * math.cos(theta)
-
-        # roll
-        theta = math.radians(self.orientation[2])
-        x = x * math.cos(theta) - y * math.sin(theta)
-        y = x * math.sin(theta) + y * math.cos(theta)
-        z = z
-
-        rotated_vertex = (x, y, z)
-
-        # translate
-        x, y, z = rotated_vertex
-        xt, yt, zt = self.position
-
-        #translated_vertex = pygame.Vector3(x + xt, y + yt, z + zt)
+        x = x + self.position[0]
+        y = y + self.position[1]
+        z = z + self.position[2]
         
-        return rotated_vertex
+        return pygame.Vector3(x, y, z)
+        #return local_vertex
 
     def world_to_view(self, world_vertex) -> pygame.Vector3:
         """
@@ -89,15 +70,16 @@ class Object3D:
         # along the clip space 2x2x2 cube.
         near, far, left, right, bottom, top = frustum
 
-        xp, yp, zp = view_vertex
+        xe, ye, ze = view_vertex
+
+        xp = xe * near / ze # near = -N
+        yp = ye * near / ze # near = -N
 
         xn = 2 * xp / (right - left)
         yn = 2 * yp / (top - bottom)
-        zn = -0.1
+        zn = -near
 
-        clip_vertex = pygame.Vector3(xn, yn, zn)
-
-        return clip_vertex
+        return pygame.Vector3(xn, yn, zn)
 
     def clip_to_screen(
         self, clip_vertex: pygame.Vector3, surface: pygame.Surface
@@ -111,8 +93,8 @@ class Object3D:
         # the the positive y-axis goes DOWN in Pygame, but UP in clip space.
 
         screen_vertex: tuple[int, int] = (
-                int((clip_vertex[0] + 1) / 2) * surface.get_width(), 
-                (int(surface.get_height() - ((clip_vertex[1] + 1) / 2) * surface.get_height()))
+                int((clip_vertex[0] + 1) / 2 * surface.get_width()), 
+                int(surface.get_height() - ((clip_vertex[1] + 1) / 2 * surface.get_height()))
                 )
 
         return ((screen_vertex[0]), (screen_vertex[1]))

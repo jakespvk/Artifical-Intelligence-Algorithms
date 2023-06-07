@@ -41,6 +41,7 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 done = True
         m.orientation += pygame.Vector3(0, 0, 0.1)
+        m.scale += pygame.Vector3(0.002, 0.002, 0.002)
         m.draw(screen, frustum)
         pygame.display.flip()
     pygame.quit()
