@@ -35,13 +35,17 @@ if __name__ == "__main__":
     frustum = (near, far, left, right, bottom, top)
     black = pygame.Color(0, 0, 0)
 
+    i: int = 0
+
     while not done:
         screen.fill(black)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-        m.orientation += pygame.Vector3(0, 0, 0.1)
-        m.scale += pygame.Vector3(0.002, 0.002, 0.002)
+        m.orientation += pygame.Vector3(0.001, 0.001, 0.001)
+        if (i < 90):
+            m.scale += pygame.Vector3(0.002, 0.002, 0.002)
+            i += 1
         m.draw(screen, frustum)
         pygame.display.flip()
     pygame.quit()

@@ -35,9 +35,9 @@ class Object3D:
         x, y, z = local_vertex
 
         # SCALE
-        x = x * self.scale[0]
-        y = y * self.scale[1]
-        z = z * self.scale[2]
+        x_s = x * self.scale[0]
+        y_s = y * self.scale[1]
+        z_s = z * self.scale[2]
 
         # ROTATIONS:
         
@@ -45,30 +45,32 @@ class Object3D:
         cos = math.cos(self.orientation[1])
         sin = math.sin(self.orientation[1])
 
-        x = (x * cos) + (z * sin)
-        z = (z * cos) - (x * sin)
+        x_y = x_s * cos + z_s * sin
+        y_y = y_s
+        z_y = z_s * cos - x_s * sin
 
         # pitch
         cos = math.cos(self.orientation[0])
         sin = math.sin(self.orientation[0])
 
-        y = (y * cos) - (z * sin)
-        z = (y * sin) + (z * cos)
+        x_p = x_y
+        y_p = y_y * cos - z_y * sin
+        z_p = y_y * sin + z_y * cos
 
         # roll
         cos = math.cos(self.orientation[2])
         sin = math.sin(self.orientation[2])
 
-        x = (x * cos) - (y * sin)
-        y = (x * sin) + (y * cos)
+        x_r = x_p * cos - y_p * sin
+        y_r = x_p * sin + y_p * cos
+        z_r = z_p
         
         # TRANSLATION
-        x = x + self.position[0]
-        y = y + self.position[1]
-        z = z + self.position[2]
+        x_t = x_r + self.position[0]
+        y_t = y_r + self.position[1]
+        z_t = z_r + self.position[2]
         
-        return pygame.Vector3(x, y, z)
-        #return local_vertex
+        return pygame.Vector3(x_t, y_t, z_t)
 
     def world_to_view(self, world_vertex) -> pygame.Vector3:
         """
