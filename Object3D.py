@@ -72,8 +72,8 @@ class Object3D:
 
         xe, ye, ze = view_vertex
 
-        xp = xe * near / ze # near = -N
-        yp = ye * near / ze # near = -N
+        xp = xe * -0.1 / ze # near = -N
+        yp = ye * -0.1 / ze # near = -N
 
         xn = 2 * xp / (right - left)
         yn = 2 * yp / (top - bottom)
