@@ -1,7 +1,7 @@
 import pygame
 from Mesh3D import Mesh3D
 import math
-from Object3D_mat import Object3D
+from Object3D import Object3D
 
 ######
 # REQUIREMENTS:
