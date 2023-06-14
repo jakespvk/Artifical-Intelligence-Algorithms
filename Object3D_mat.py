@@ -1,8 +1,9 @@
 from OpenGL.GL import *
 from Mesh3D import Mesh3D
 import math
-import pygame
+import numpy as np
 import primitives
+import pygame
 
 
 # An object in 3D space, with a mesh, position, orientation (yaw/pitch/roll),
@@ -11,16 +12,16 @@ class Object3D:
     def __init__(
         self,
         mesh: Mesh3D,
-        position: pygame.Vector3 = pygame.Vector3(0.0, 0.0, 0.0),
-        orientation: pygame.Vector3 = pygame.Vector3(0.0, 0.0, 0.0),
-        scale: pygame.Vector3 = pygame.Vector3(1.0, 1.0, 1.0),
+        position: np.ndarray = np.array([0.0, 0.0, 0.0]),
+        orientation: np.ndarray = np.array([0.0, 0.0, 0.0]),
+        scale: np.ndarray = np.array([1.0, 1.0, 1.0])
     ):
         self.mesh = mesh
         self.position = position
         self.orientation = orientation
         self.scale = scale
 
-    def local_to_world(self, local_vertex: pygame.Vector3) -> pygame.Vector3:
+    def local_to_world(self, local_vertex: np.ndarray) -> np.ndarray:
         """
         Transforms the given local-space vertex to world space,
         by applying the translation, orientation, and scale vectors
@@ -72,7 +73,9 @@ class Object3D:
         
         return pygame.Vector3(x_t, y_t, z_t)
 
-    def world_to_view(self, world_vertex) -> pygame.Vector3:
+    def world_to_view(self, world_vertex: np.ndarray, 
+                      camera: tuple[int, int, int, int, int, int, int, int, int]
+                      ) -> np.ndarray:
         """
         Transforms the given world-space vertex to view space,
         by translating and rotating the object according to the 
@@ -81,9 +84,12 @@ class Object3D:
 
         # We don't have a movable camera for this demo, so world space
         # is identical to view space.
+        
+        #ruf matrix here
+
         return world_vertex
 
-    def view_to_clip(self, view_vertex: pygame.Vector3, frustum) -> pygame.Vector3:
+    def view_to_clip(self, view_vertex: np.ndarray, frustum) -> np.ndarray:
         """
         Projects the view-space vertex to clip space (normalized device coordinates).
         """
@@ -105,8 +111,7 @@ class Object3D:
         return pygame.Vector3(xn, yn, zn)
 
     def clip_to_screen(
-        self, clip_vertex: pygame.Vector3, surface: pygame.Surface
-    ) -> tuple[int, int]:
+        self, clip_vertex: np.ndarray, surface: np.ndarray) -> tuple[int, int]:
         """
         Projects the clip-space/NDC coordinate to the screen space represented
         by the given pygame Surface object. 
@@ -122,10 +127,11 @@ class Object3D:
 
         return ((screen_vertex[0]), (screen_vertex[1]))
 
-    def draw(self, surface: pygame.Surface, frustum):
+    def draw(self, surface: pygame.Surface, frustum,
+             camera: tuple[int, int, int, int, int, int, int, int, int]):
         projected = []
         for v_local in self.mesh.vertices:
-            v_world = self.local_to_world(v_local)
+            v_world = self.local_to_world(v_local) # is this what the instructions mean???
             v_view = self.world_to_view(v_world)
             v_clip = self.view_to_clip(v_view, frustum)
             v_screen = self.clip_to_screen(v_clip, surface)

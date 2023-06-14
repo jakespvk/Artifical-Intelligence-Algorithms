@@ -1,6 +1,5 @@
 from OpenGL.GL import *
 import pygame
-import numpy as np
 
 # This code is reorganized somewhat from the reading, so we can
 # add colors to each of the faces.

@@ -2,6 +2,7 @@ import pygame
 from Mesh3D import Mesh3D
 import math
 from Object3D_mat import Object3D
+import numpy as np
 
 ######
 # REQUIREMENTS:
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((screen_width, screen_height))
     done = False
     m = make_cube()
-    m.position = pygame.Vector3(0, 0, -5)
+    m.position = np.array([0, 0, -5])
 
     # Given the vertical half-FOV, compute coordinates of the perspective frustum.
     v_fov = 30
