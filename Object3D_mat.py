@@ -33,45 +33,48 @@ class Object3D:
         # scale; then rotate yaw, rotate pitch, rotate roll; 
         # then translate.
 
-        x, y, z = local_vertex
-
         # SCALE
-        x_s = x * self.scale[0]
-        y_s = y * self.scale[1]
-        z_s = z * self.scale[2]
+        scaled_local_vertex = local_vertex * self.scale
 
-        # ROTATIONS:
-        
+        # ROTATIONS 
+
         # yaw
         cos = math.cos(self.orientation[1])
         sin = math.sin(self.orientation[1])
 
-        x_y = x_s * cos + z_s * sin
-        y_y = y_s
-        z_y = z_s * cos - x_s * sin
+        yaw_mat = np.array([[cos, 0, -sin, 0],
+                           [0, 1, 0, 0],
+                           [sin, 0, cos, 0],
+                           [0, 0, 0, 1]])
+
+        yawed_local_vertex = scaled_local_vertex * yaw_mat
 
         # pitch
         cos = math.cos(self.orientation[0])
         sin = math.sin(self.orientation[0])
 
-        x_p = x_y
-        y_p = y_y * cos - z_y * sin
-        z_p = y_y * sin + z_y * cos
+        pitch_mat = np.array([[1, 0, 0, 0],
+                             [0, cos, sin, 0],
+                             [0, -sin, cos, 0],
+                             [0, 0, 0, 1]])
 
+        pitched_local_vertex = yawed_local_vertex * pitch_mat
+    
         # roll
         cos = math.cos(self.orientation[2])
         sin = math.sin(self.orientation[2])
 
-        x_r = x_p * cos - y_p * sin
-        y_r = x_p * sin + y_p * cos
-        z_r = z_p
-        
+        roll_mat = np.array([[cos, sin, 0, 0],
+                            [-sin, cos, 0, 0],
+                            [0, 0, 1, 0],
+                            [0, 0, 0, 1]])
+
+        rolled_local_vertex = pitched_local_vertex * roll_mat
+
         # TRANSLATION
-        x_t = x_r + self.position[0]
-        y_t = y_r + self.position[1]
-        z_t = z_r + self.position[2]
+        translated_local_vertex = rolled_local_vertex + self.position
         
-        return pygame.Vector3(x_t, y_t, z_t)
+        return translated_local_vertex
 
     def world_to_view(self, world_vertex: np.ndarray, 
                       camera: tuple[int, int, int, int, int, int, int, int, int]
@@ -132,7 +135,7 @@ class Object3D:
         projected = []
         for v_local in self.mesh.vertices:
             v_world = self.local_to_world(v_local) # is this what the instructions mean???
-            v_view = self.world_to_view(v_world)
+            v_view = self.world_to_view(v_world, camera)
             v_clip = self.view_to_clip(v_view, frustum)
             v_screen = self.clip_to_screen(v_clip, surface)
             projected.append(v_screen)
