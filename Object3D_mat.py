@@ -21,7 +21,7 @@ class Object3D:
         self.orientation = orientation
         self.scale = scale
 
-    def local_to_world(self, local_vertex) -> np.ndarray:
+    def local_to_world(self, local_vertex: np.ndarray) -> np.ndarray:
         """
         Transforms the given local-space vertex to world space,
         by applying the translation, orientation, and scale vectors
@@ -90,7 +90,9 @@ class Object3D:
 
         return local_mat
 
-    def world_to_view(self, world_vertex, camera):
+    def world_to_view(self, world_vertex: np.ndarray, 
+                      camera: tuple[int, int, int, int, int, int, int, int, int]
+                      ) -> np.ndarray:
         """
         Transforms the given world-space vertex to view space,
         by translating and rotating the object according to the 
@@ -104,13 +106,11 @@ class Object3D:
         eye_vec = np.array([camera[0], camera[1], camera[2]]) 
         at_vec = np.array([camera[3], camera[4], camera[5]])
         up_vec = np.array([camera[6], camera[7], camera[8]])
-        
         forward = np.array([eye_vec[0] - at_vec[0],
                             eye_vec[1] - at_vec[1],
                             eye_vec[2] - at_vec[2]])
         forward = forward / np.linalg.norm(forward)
-        print(forward)
-        right = (np.cross(np.array([up_vec[0], up_vec[1], up_vec[2]]), forward)) 
+        right = (np.cross(np.array([up_vec[0], up_vec[1], up_vec[2]]), forward))
         right = right / np.linalg.norm(right)
 
         tx = np.dot(eye_vec, right)
