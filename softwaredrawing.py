@@ -15,8 +15,8 @@ def make_cube():
 
 if __name__ == "__main__":
     pygame.init()
-    screen_width = 1200
-    screen_height = 800
+    screen_width = 3840
+    screen_height = 2160
     screen = pygame.display.set_mode((screen_width, screen_height))
     done = False
     m = make_cube()
@@ -43,10 +43,9 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-        m.orientation += np.array([0.001, 0.001, 0.001])
-        if (i < 90):
-            m.scale += np.array([0.002, 0.002, 0.002])
-            i += 1
-        m.draw(screen, frustum, (0, 0, 0, 0, 0, 0, 0, 1, 0))
+        #m.scale = pygame.Vector3(1, 1, 1)
+        m.orientation += pygame.Vector3(0.001, 0.001, 0.001)
+        m.position += pygame.Vector3(1, 1, 1)
+        m.draw(screen, frustum, (0, 0, 0, 0, 0, -5, 0, -1, 0))
         pygame.display.flip()
     pygame.quit()

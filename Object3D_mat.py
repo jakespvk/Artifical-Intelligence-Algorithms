@@ -21,7 +21,7 @@ class Object3D:
         self.orientation = orientation
         self.scale = scale
 
-    def local_to_world(self, local_vertex: np.ndarray) -> np.ndarray:
+    def local_to_world(self, local_vertex) -> np.ndarray:
         """
         Transforms the given local-space vertex to world space,
         by applying the translation, orientation, and scale vectors
@@ -33,12 +33,18 @@ class Object3D:
         # scale; then rotate yaw, rotate pitch, rotate roll; 
         # then translate.
 
+        # mat conversion
+        local_mat = np.array([local_vertex[0],
+                              local_vertex[1],
+                              local_vertex[2],
+                              1])
+        
         # SCALE
         scale_mat = np.array([[self.scale[0], 0, 0, 0],
                               [0, self.scale[1], 0, 0],
                               [0, 0, self.scale[2], 0],
                               [0, 0, 0, 1]])
-        scaled_local_vertex = local_vertex * scale_mat
+        local_mat = np.matmul(scale_mat, local_mat)
 
         # ROTATIONS 
         # yaw
@@ -50,7 +56,7 @@ class Object3D:
                            [sin, 0, cos, 0],
                            [0, 0, 0, 1]])
 
-        yawed_local_vertex = scaled_local_vertex * yaw_mat
+        local_mat = np.matmul(yaw_mat, local_mat)
 
         # pitch
         cos = math.cos(self.orientation[0])
@@ -61,7 +67,7 @@ class Object3D:
                              [0, -sin, cos, 0],
                              [0, 0, 0, 1]])
 
-        pitched_local_vertex = yawed_local_vertex * pitch_mat
+        local_mat = np.matmul(pitch_mat, local_mat)
     
         # roll
         cos = math.cos(self.orientation[2])
@@ -72,7 +78,7 @@ class Object3D:
                             [0, 0, 1, 0],
                             [0, 0, 0, 1]])
 
-        rolled_local_vertex = pitched_local_vertex * roll_mat
+        local_mat = np.matmul(roll_mat, local_mat)
 
         # TRANSLATION
         position_mat = np.array([[1, 0, 0, self.position[0]],
@@ -80,19 +86,11 @@ class Object3D:
                                  [0, 0, 1, self.position[2]],
                                  [0, 0, 0, 1]])
 
-        translated_local_vertex = rolled_local_vertex + position_mat
+        local_mat = np.matmul(position_mat, local_mat)
 
-        world_vec = np.array([translated_local_vertex[0, 0],
-                              translated_local_vertex[1, 1],
-                              translated_local_vertex[2, 2],
-                              1])
-        
-        print(world_vec)
-        return world_vec 
+        return local_mat
 
-    def world_to_view(self, world_vertex: np.ndarray, 
-                      camera: tuple[int, int, int, int, int, int, int, int, int]
-                      ) -> np.ndarray:
+    def world_to_view(self, world_vertex, camera):
         """
         Transforms the given world-space vertex to view space,
         by translating and rotating the object according to the 
@@ -106,11 +104,15 @@ class Object3D:
         eye_vec = np.array([camera[0], camera[1], camera[2]]) 
         at_vec = np.array([camera[3], camera[4], camera[5]])
         up_vec = np.array([camera[6], camera[7], camera[8]])
-        y_axis = np.array([0, 1, 0])
-        forward = np.divide((eye_vec - at_vec), (eye_vec + at_vec))
+        
+        forward = np.array([eye_vec[0] - at_vec[0],
+                            eye_vec[1] - at_vec[1],
+                            eye_vec[2] - at_vec[2]])
+        forward = forward / np.linalg.norm(forward)
         print(forward)
-        right = (np.cross(y_axis, forward)) / (y_axis + forward)
-        up = np.cross(forward, right)
+        right = (np.cross(np.array([up_vec[0], up_vec[1], up_vec[2]]), forward)) 
+        right = right / np.linalg.norm(right)
+
         tx = np.dot(eye_vec, right)
         ty = np.dot(eye_vec, up_vec)
         tz = np.dot(eye_vec, forward)
@@ -122,18 +124,11 @@ class Object3D:
 
         # transpose??? or how do numpy mats work???????
         ruf_mat_tpose = np.array([[right[0], right[1], right[2], -tx],
-                            [up[0], up[1], up[2], -ty],
+                            [up_vec[0], up_vec[1], up_vec[2], -ty],
                             [forward[0], forward[1], forward[2], -tz],
                             [0, 0, 0, 1]])
 
-        view_mat = world_vertex * ruf_mat_tpose
-        view_vec = np.array([view_mat[1, 1],
-                             view_mat[2, 2],
-                             view_mat[3, 3],
-                             1])
-
-        print(view_vec)
-        return view_vec
+        return np.matmul(world_vertex, ruf_mat_tpose)
 
     def view_to_clip(self, view_vertex: np.ndarray, frustum) -> np.ndarray:
         """
@@ -151,13 +146,12 @@ class Object3D:
             [0, 0, (far + near) / (near - far), (2 * far * near) / (near - far)],
             [0, 0, -1, 0]])
 
-        clip_vertex_pre_normalization = view_vertex * perspective_projection_mat
+        clip_vertex_pre_normalization = np.matmul(perspective_projection_mat, view_vertex)
 
         w = clip_vertex_pre_normalization[3]
         clip_vertex = np.array([clip_vertex_pre_normalization[0] / w,
                                 clip_vertex_pre_normalization[1] / w,
-                                clip_vertex_pre_normalization[2] / w,
-                                w])
+                                clip_vertex_pre_normalization[2] / w])
 
         return clip_vertex
 
