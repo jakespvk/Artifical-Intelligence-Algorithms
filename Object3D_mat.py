@@ -34,10 +34,13 @@ class Object3D:
         # then translate.
 
         # SCALE
-        scaled_local_vertex = local_vertex * self.scale
+        scale_mat = np.array([[self.scale[0], 0, 0, 0],
+                              [0, self.scale[1], 0, 0],
+                              [0, 0, self.scale[2], 0],
+                              [0, 0, 0, 1]])
+        scaled_local_vertex = local_vertex * scale_mat
 
         # ROTATIONS 
-
         # yaw
         cos = math.cos(self.orientation[1])
         sin = math.sin(self.orientation[1])
@@ -72,9 +75,20 @@ class Object3D:
         rolled_local_vertex = pitched_local_vertex * roll_mat
 
         # TRANSLATION
-        translated_local_vertex = rolled_local_vertex + self.position
+        position_mat = np.array([[1, 0, 0, self.position[0]],
+                                 [0, 1, 0, self.position[1]],
+                                 [0, 0, 1, self.position[2]],
+                                 [0, 0, 0, 1]])
+
+        translated_local_vertex = rolled_local_vertex + position_mat
+
+        world_vec = np.array([translated_local_vertex[0, 0],
+                              translated_local_vertex[1, 1],
+                              translated_local_vertex[2, 2],
+                              1])
         
-        return translated_local_vertex
+        print(world_vec)
+        return world_vec 
 
     def world_to_view(self, world_vertex: np.ndarray, 
                       camera: tuple[int, int, int, int, int, int, int, int, int]
@@ -88,9 +102,38 @@ class Object3D:
         # We don't have a movable camera for this demo, so world space
         # is identical to view space.
         
+        # pre-compute R U F vectors
+        eye_vec = np.array([camera[0], camera[1], camera[2]]) 
+        at_vec = np.array([camera[3], camera[4], camera[5]])
+        up_vec = np.array([camera[6], camera[7], camera[8]])
+        y_axis = np.array([0, 1, 0])
+        forward = np.divide((eye_vec - at_vec), (eye_vec + at_vec))
+        print(forward)
+        right = (np.cross(y_axis, forward)) / (y_axis + forward)
+        up = np.cross(forward, right)
+        tx = np.dot(eye_vec, right)
+        ty = np.dot(eye_vec, up_vec)
+        tz = np.dot(eye_vec, forward)
         #ruf matrix here
+        '''ruf_mat = np.array([[right[0], up[0], forward[0], 0],
+                            [right[1], up[1], forward[1], 0],
+                            [right[2], up[2], forward[2], 0],
+                            [tx, ty, tz, 1]])'''
 
-        return world_vertex
+        # transpose??? or how do numpy mats work???????
+        ruf_mat_tpose = np.array([[right[0], right[1], right[2], -tx],
+                            [up[0], up[1], up[2], -ty],
+                            [forward[0], forward[1], forward[2], -tz],
+                            [0, 0, 0, 1]])
+
+        view_mat = world_vertex * ruf_mat_tpose
+        view_vec = np.array([view_mat[1, 1],
+                             view_mat[2, 2],
+                             view_mat[3, 3],
+                             1])
+
+        print(view_vec)
+        return view_vec
 
     def view_to_clip(self, view_vertex: np.ndarray, frustum) -> np.ndarray:
         """
@@ -102,19 +145,24 @@ class Object3D:
         # along the clip space 2x2x2 cube.
         near, far, left, right, bottom, top = frustum
 
-        xe, ye, ze = view_vertex
+        perspective_projection_mat = np.array([
+            [(2 * near) / (right - left), 0, (right + left) / (right - left), 0],
+            [0, (2 * near) / (top - bottom), (top + bottom) / (top - bottom), 0],
+            [0, 0, (far + near) / (near - far), (2 * far * near) / (near - far)],
+            [0, 0, -1, 0]])
 
-        xp = xe * -0.1 / ze # near = -N
-        yp = ye * -0.1 / ze # near = -N
+        clip_vertex_pre_normalization = view_vertex * perspective_projection_mat
 
-        xn = 2 * xp / (right - left)
-        yn = 2 * yp / (top - bottom)
-        zn = -near
+        w = clip_vertex_pre_normalization[3]
+        clip_vertex = np.array([clip_vertex_pre_normalization[0] / w,
+                                clip_vertex_pre_normalization[1] / w,
+                                clip_vertex_pre_normalization[2] / w,
+                                w])
 
-        return pygame.Vector3(xn, yn, zn)
+        return clip_vertex
 
     def clip_to_screen(
-        self, clip_vertex: np.ndarray, surface: np.ndarray) -> tuple[int, int]:
+        self, clip_vertex: np.ndarray, surface: pygame.Surface) -> tuple[int, int]:
         """
         Projects the clip-space/NDC coordinate to the screen space represented
         by the given pygame Surface object. 
@@ -134,7 +182,7 @@ class Object3D:
              camera: tuple[int, int, int, int, int, int, int, int, int]):
         projected = []
         for v_local in self.mesh.vertices:
-            v_world = self.local_to_world(v_local) # is this what the instructions mean???
+            v_world = self.local_to_world(np.array([v_local[0], v_local[1], v_local[2], 1]))
             v_view = self.world_to_view(v_world, camera)
             v_clip = self.view_to_clip(v_view, frustum)
             v_screen = self.clip_to_screen(v_clip, surface)
@@ -147,4 +195,3 @@ class Object3D:
                 projected[tri[2]],
             )
             primitives.draw_triangle(surface, a, b, c, tri[3])
-

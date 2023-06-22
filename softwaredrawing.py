@@ -43,10 +43,10 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-        m.orientation += pygame.Vector3(0.001, 0.001, 0.001)
+        m.orientation += np.array([0.001, 0.001, 0.001])
         if (i < 90):
-            m.scale += pygame.Vector3(0.002, 0.002, 0.002)
+            m.scale += np.array([0.002, 0.002, 0.002])
             i += 1
-        m.draw(screen, frustum)
+        m.draw(screen, frustum, (0, 0, 0, 0, 0, 0, 0, 1, 0))
         pygame.display.flip()
     pygame.quit()
