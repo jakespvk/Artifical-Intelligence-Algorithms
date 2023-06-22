@@ -21,6 +21,54 @@ class Object3D:
         self.orientation = orientation
         self.scale = scale
 
+    # do we always pass self to member functions?
+    def transformations(self) -> np.ndarray:
+        # SCALE
+        scale_mat = np.array([[self.scale[0], 0, 0, 0],
+                              [0, self.scale[1], 0, 0],
+                              [0, 0, self.scale[2], 0],
+                              [0, 0, 0, 1]])
+        # ROTATIONS 
+        # yaw
+        cos = math.cos(self.orientation[1])
+        sin = math.sin(self.orientation[1])
+
+        yaw_mat = np.array([[cos, 0, -sin, 0],
+                            [0, 1, 0, 0],
+                            [sin, 0, cos, 0],
+                            [0, 0, 0, 1]])
+
+
+        # pitch
+        cos = math.cos(self.orientation[0])
+        sin = math.sin(self.orientation[0])
+
+        pitch_mat = np.array([[1, 0, 0, 0],
+                              [0, cos, sin, 0],
+                              [0, -sin, cos, 0],
+                              [0, 0, 0, 1]])
+
+        # roll
+        cos = math.cos(self.orientation[2]) 
+        sin = math.sin(self.orientation[2])
+
+        roll_mat = np.array([[cos, sin, 0, 0],
+                             [-sin, cos, 0, 0],
+                             [0, 0, 1, 0],
+                             [0, 0, 0, 1]])
+
+        # TRANSLATION
+        position_mat = np.array([[1, 0, 0, self.position[0]],
+                                 [0, 1, 0, self.position[1]],
+                                 [0, 0, 1, self.position[2]],
+                                 [0, 0, 0, 1]])
+        
+        return np.matmul(position_mat, 
+                                   np.matmul(roll_mat, 
+                                             np.matmul(pitch_mat,
+                                                       np.matmul(yaw_mat, scale_mat)
+                                                       )))
+
     def local_to_world(self, local_vertex: np.ndarray) -> np.ndarray:
         """
         Transforms the given local-space vertex to world space,
@@ -38,57 +86,8 @@ class Object3D:
                               local_vertex[1],
                               local_vertex[2],
                               1])
-        
-        # SCALE
-        scale_mat = np.array([[self.scale[0], 0, 0, 0],
-                              [0, self.scale[1], 0, 0],
-                              [0, 0, self.scale[2], 0],
-                              [0, 0, 0, 1]])
-        local_mat = np.matmul(scale_mat, local_mat)
 
-        # ROTATIONS 
-        # yaw
-        cos = math.cos(self.orientation[1])
-        sin = math.sin(self.orientation[1])
-
-        yaw_mat = np.array([[cos, 0, -sin, 0],
-                           [0, 1, 0, 0],
-                           [sin, 0, cos, 0],
-                           [0, 0, 0, 1]])
-
-        local_mat = np.matmul(yaw_mat, local_mat)
-
-        # pitch
-        cos = math.cos(self.orientation[0])
-        sin = math.sin(self.orientation[0])
-
-        pitch_mat = np.array([[1, 0, 0, 0],
-                             [0, cos, sin, 0],
-                             [0, -sin, cos, 0],
-                             [0, 0, 0, 1]])
-
-        local_mat = np.matmul(pitch_mat, local_mat)
-    
-        # roll
-        cos = math.cos(self.orientation[2])
-        sin = math.sin(self.orientation[2])
-
-        roll_mat = np.array([[cos, sin, 0, 0],
-                            [-sin, cos, 0, 0],
-                            [0, 0, 1, 0],
-                            [0, 0, 0, 1]])
-
-        local_mat = np.matmul(roll_mat, local_mat)
-
-        # TRANSLATION
-        position_mat = np.array([[1, 0, 0, self.position[0]],
-                                 [0, 1, 0, self.position[1]],
-                                 [0, 0, 1, self.position[2]],
-                                 [0, 0, 0, 1]])
-
-        local_mat = np.matmul(position_mat, local_mat)
-
-        return local_mat
+        return np.matmul(self.transformations(), local_mat)
 
     def world_to_view(self, world_vertex: np.ndarray, 
                       camera: tuple[int, int, int, int, int, int, int, int, int]
