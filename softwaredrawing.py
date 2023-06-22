@@ -15,8 +15,8 @@ def make_cube():
 
 if __name__ == "__main__":
     pygame.init()
-    screen_width = 3840
-    screen_height = 2160
+    screen_width = 1200
+    screen_height = 900
     screen = pygame.display.set_mode((screen_width, screen_height))
     done = False
     m = make_cube()
