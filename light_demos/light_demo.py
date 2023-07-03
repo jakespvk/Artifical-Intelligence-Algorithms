@@ -37,11 +37,12 @@ if __name__ == "__main__":
     screen_width = 2800
     screen_height = 1800
     # For Mac people.
-    # pygame.display.gl_set_attribute(GL_CONTEXT_MAJOR_VERSION, 4)
-    # pygame.display.gl_set_attribute(GL_CONTEXT_MINOR_VERSION, 1)
-    # pygame.display.gl_set_attribute(GL_CONTEXT_FORWARD_COMPATIBLE_FLAG, True)
-    # pygame.display.gl_set_attribute(GL_CONTEXT_PROFILE_COMPATIBILITY, GL_CONTEXT_PROFILE_CORE)
-    
+    #pygame.display.gl_set_attribute(GL_CONTEXT_MAJOR_VERSION, 4)
+    #pygame.display.gl_set_attribute(GL_CONTEXT_MINOR_VERSION, 1)
+    #pygame.display.gl_set_attribute(GL_CONTEXT_FORWARD_COMPATIBLE_FLAG, True)
+    #pygame.display.gl_set_attribute(GL_CONTEXT_PROFILE_COMPATIBILITY, GL_CONTEXT_PROFILE_CORE)
+    #pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, GL_CONTEXT_PROFILE_CORE)
+
     screen = pygame.display.set_mode(
         (screen_width, screen_height),
         DOUBLEBUF | OPENGL,
@@ -52,6 +53,16 @@ if __name__ == "__main__":
     bunny.center_point(glm.vec3(-0.03, 0.07, 0))
     bunny.move(glm.vec3(0.1, -0.5, -3))
     bunny.grow(glm.vec3(5, 5, 5))
+    
+    # On Mac, we were getting errors when compiling shaders before loading a mesh.
+    #mesh_rink = load_textured_obj("models/hockey_rink.obj", "models/rink_pic.jpg")
+    mesh_goal = load_textured_obj("models/goal.obj", "models/white.jpg")
+    #mesh_ice = load_textured_obj("models/cube.obj", "models/rink_pic.jpg")
+    rink = load_textured_obj("models/mini_ice_rink.obj", "models/ice_texture.jpg")
+    #mesh = load_textured_obj("models/bunny_textured.obj", "models/bunny_textured.jpg")
+    puck = load_textured_obj("models/puck.obj", "models/white.jpg")
+    mesh_stick = load_textured_obj("models/stick.obj", "models/white.jpg")
+    broom = load_textured_obj("models/Broom.obj", "models/white.jpg")
 
     light = load_textured_obj("models/cube.obj", "models/wall.jpg")
     light.center_point(glm.vec3(0, 0, -10))
@@ -63,7 +74,7 @@ if __name__ == "__main__":
         load_shader_source("shaders/normal_perspective.vert"), GL_VERTEX_SHADER
     )
     fragment_shader = shaders.compileShader(
-        load_shader_source("shaders/diffuse_light.frag"), GL_FRAGMENT_SHADER
+        load_shader_source("shaders/specular_light.frag"), GL_FRAGMENT_SHADER
     )
     shader_lighting = shaders.compileProgram(vertex_shader, fragment_shader)
 
@@ -84,11 +95,12 @@ if __name__ == "__main__":
 
     # Initialize lighting parameters.
     ambient_color = glm.vec3(1, 1, 1)
-    ambient_intensity = 0.1
-    point_position = glm.vec3(0, 0, 0)
+    ambient_intensity = 0.6
+    point_position = glm.vec3(0, 0, 0.01)
     renderer.set_uniform("ambientColor", ambient_color * ambient_intensity, glm.vec3)
     renderer.set_uniform("pointPosition", point_position, glm.vec3)
     renderer.set_uniform("pointColor", glm.vec3(1, 1, 1), glm.vec3)
+    renderer.set_uniform("viewVector", glm.vec3(0, 0, 0), glm.vec3)
 
     # Loop
     done = False
@@ -98,6 +110,42 @@ if __name__ == "__main__":
     glEnable(GL_DEPTH_TEST)
     keys_down = set()
     spin = False
+
+    #bunny
+    bunny.grow(glm.vec3(1, 1, 3))
+    bunny.move(glm.vec3(-0.2, -0.2, 0))
+    
+    #goal
+    mesh_goal.grow(glm.vec3(0.00015, 0.00015, 0.00015))
+    mesh_goal.rotate(glm.vec3(0.2, 0, 0))
+    mesh_goal.move(glm.vec3(-0.1, -0.04, 0.14))
+
+    #ice
+    #mesh_ice.grow(glm.vec3(3, 2, 0))
+    #mesh_ice.move(glm.vec3(-0.2, 0, 0))
+    #mesh_ice.rotate(glm.vec3(0.1, 0, 0))
+
+    #rink
+    #rink.grow(glm.vec3(3, 2, 0))
+    #rink.move(glm.vec3(-0.2, 0, -0.5))
+    #rink.rotate(glm.vec3(0.1, 0, 0))
+
+    #puck
+    #puck.move(glm.vec3(-0.8, -0.8, 0))
+    puck.grow(glm.vec3(0.001, 0.001, 0.001))
+
+    #broom 
+    broom.grow(glm.vec3(0.02, 0.02, 0.02))
+
+    #stick
+    mesh_stick.grow(glm.vec3(0.005, 0.005, 0.005))
+    mesh_stick.move(glm.vec3(0, -0.5, 0.5))
+
+    #rink
+    rink.grow(glm.vec3(0.008, 0.008, 0.008))
+    rink.rotate(glm.vec3(0.25, 0, 0))
+    rink.move(glm.vec3(0, -1.0, -1))
+
     while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -115,12 +163,18 @@ if __name__ == "__main__":
             bunny.rotate(glm.vec3(0, 0.001, 0))
         elif pygame.K_LEFT in keys_down:
             bunny.rotate(glm.vec3(0, -0.001, 0))
-        elif pygame.K_a in keys_down:
+        elif pygame.K_l in keys_down:
            light.move(glm.vec3(-0.001, 0, 0))
            renderer.set_uniform("pointPosition", light.position, glm.vec3)
-        elif pygame.K_d in keys_down:
+        elif pygame.K_h in keys_down:
            light.move(glm.vec3(0.001, 0, 0))
            renderer.set_uniform("pointPosition", light.position, glm.vec3)
+        #elif pygame.K_j in keys_down:
+        #   light.move(glm.vec3(0, -0.005, 0))
+        #   renderer.set_uniform("pointPosition", light.position, glm.vec3)
+        #elif pygame.K_k in keys_down:
+        #   light.move(glm.vec3(0, 0.005, 0))
+        #   renderer.set_uniform("pointPosition", light.position, glm.vec3)
         elif pygame.K_SPACE in keys_down:
             spin = not spin
 
@@ -129,8 +183,11 @@ if __name__ == "__main__":
         # Draw the bunny with lighting.
         renderer.use_program(shader_lighting)
         renderer.set_uniform("pointPosition", light.get_position(), glm.vec3)
-        renderer.render(perspective, camera, [bunny])
+        #renderer.render(perspective, camera, [bunny])
+        #renderer.render(perspective, camera, [bunny, mesh_goal, rink, broom, mesh_stick])
         
+        renderer.render(perspective, camera, [mesh_stick, rink, puck])
+   
         # Draw the light source without lighting itself.
         renderer.use_program(shader_no_lighting)
         renderer.render(perspective, camera, [light])

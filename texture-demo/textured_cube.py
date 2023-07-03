@@ -28,6 +28,7 @@ def load_shader_source(filename):
         return f.read()
 
 
+
 if __name__ == "__main__":
     pygame.init()
     screen_width = 2800
@@ -39,12 +40,13 @@ if __name__ == "__main__":
     pygame.display.set_caption("OpenGL in Python")
 
     # On Mac, we were getting errors when compiling shaders before loading a mesh.
-    mesh_rink = load_textured_obj("models/hockey_rink.obj", "models/rink_pic.jpg")
+    #mesh_rink = load_textured_obj("models/hockey_rink.obj", "models/rink_pic.jpg")
     mesh_goal = load_textured_obj("models/goal.obj", "models/white.png")
     mesh_ice = load_textured_obj("models/cube.obj", "models/rink_pic.jpg")
     mesh = load_textured_obj("models/bunny_textured.obj", "models/bunny_textured.jpg")
-    puck = load_textured_obj("models/puck.obj", "models/red.jpg")
+    puck = load_textured_obj("models/puck.obj", "models/black.png")
     mesh_stick = load_textured_obj("models/stick.obj", "models/white.png")
+    broom = load_textured_obj("models/broom.obj", "models/red.jpg")
     
     vertex_shader = shaders.compileShader(
         load_shader_source("shaders/textured_perspective.vert"), GL_VERTEX_SHADER
@@ -78,7 +80,6 @@ if __name__ == "__main__":
     mesh_goal.grow(glm.vec3(0.00015, 0.00015, 0.00015))
     mesh_goal.rotate(glm.vec3(0.2, 0, 0))
     mesh_goal.move(glm.vec3(-0.1, -0.04, 0.14))
-    print(mesh_goal.get_position())
 
     #ice
     mesh_ice.grow(glm.vec3(3, 2, 0))
@@ -86,7 +87,14 @@ if __name__ == "__main__":
     mesh_ice.rotate(glm.vec3(0.1, 0, 0))
 
     #puck
-    puck.move(glm.vec3(0, 0, 1))
+    puck.grow(glm.vec3(0.0005, 0.0005, 0.0005))
+    puck.move(glm.vec3(-0.8, -0.6, 0))
+    puck.rotate(glm.vec3(0.5, 0, 0))
+    
+    #broom
+    broom.move(glm.vec3(0, 0, -0.001))
+    
+    PUCK_SPEED = (0, 0.0001, -0.001)
 
     while not done:
         for event in pygame.event.get():
@@ -124,11 +132,16 @@ if __name__ == "__main__":
         if pygame.K_x in keys_down:
             mesh.move(glm.vec3(0, 0, -0.01))
 
+        # animation?
+        if pygame.K_SPACE in keys_down:
+            mesh.move(glm.vec3(PUCK_SPEED[0], PUCK_SPEED[1], PUCK_SPEED[2]))
+            mesh.grow(glm.vec3(0.9999, 0.9999, 0))
+                               
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # Render the scene given the perspective and camera matrices.
-        renderer.render(perspective, camera, [mesh, mesh_goal, mesh_ice, puck, mesh_stick])
+        renderer.render(perspective, camera, [mesh, mesh_goal, mesh_ice, puck, mesh_stick, broom])
         #renderer.render(perspective, camera, [puck])
 
         pygame.display.flip()

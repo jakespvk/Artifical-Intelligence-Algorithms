@@ -67,7 +67,7 @@ class Mesh3D:
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
         
         # Each vertex has 12 bytes of data if there is no texture; otherwise it has 20.
-        stride = 12 if texture is None else 20
+        stride = 24 if texture is None else 32 
         
         position_location = 0  
         glEnableVertexAttribArray(position_location)
@@ -76,7 +76,7 @@ class Mesh3D:
         )
 
         if texture is not None:
-            texture_location = 1
+            texture_location = 2
             glEnableVertexAttribArray(texture_location)
             # Tell OpenGL that the texCorod of each vertex is 2 floats in size,
             # and is found by skipping 12 bytes at the start of the vertex.
