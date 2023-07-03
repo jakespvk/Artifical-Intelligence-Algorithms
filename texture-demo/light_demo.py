@@ -33,19 +33,25 @@ def load_shader_source(filename):
 
 if __name__ == "__main__":
     pygame.init()
-    screen_width = 800
-    screen_height = 800
+    screen_width = 2800
+    screen_height = 1800
     screen = pygame.display.set_mode(
         (screen_width, screen_height),
         DOUBLEBUF | OPENGL,
     )
     pygame.display.set_caption("OpenGL in Python")
-    #mesh = load_textured_obj("models/dice.obj", "models/dice.png")
+    mesh_rink = load_textured_obj("models/hockey_rink.obj", "models/rink_pic.jpg")
+    mesh_goal = load_textured_obj("models/goal.obj", "models/white.png")
+    mesh_ice = load_textured_obj("models/cube.obj", "models/rink_pic.jpg")
     mesh = load_textured_obj("models/bunny_textured.obj", "models/bunny_textured.jpg")
+    puck = load_textured_obj("models/puck.obj", "models/red.jpg")
+    mesh_stick = load_textured_obj("models/stick.obj", "models/white.png")
+    #mesh = load_textured_obj("models/dice.obj", "models/dice.png")
+    #mesh = load_textured_obj("models/bunny_textured.obj", "models/bunny_textured.jpg")
     #mesh = Object3D(Mesh3D.textured_triangle(pygame.image.load("models/wall.jpg")))
     mesh.center = glm.vec3(-0.03, 0.06, 0)
-    mesh.move(glm.vec3(0, 0, -1))
-    mesh.grow(glm.vec3(5, 5, 5))
+    #mesh.move(glm.vec3(0, 0, -1))
+    #mesh.grow(glm.vec3(5, 5, 5))
 
     light = load_textured_obj("models/cube.obj", "models/wall.jpg")
     light.center = glm.vec3(0, 0, -1)
@@ -86,6 +92,25 @@ if __name__ == "__main__":
     frames = 0
     start = time.perf_counter()
 
+    #bunny
+    mesh.grow(glm.vec3(1, 1, 3))
+    mesh.move(glm.vec3(-0.2, -0.2, 0))
+    
+    #goal
+    mesh_goal.grow(glm.vec3(0.00015, 0.00015, 0.00015))
+    mesh_goal.rotate(glm.vec3(0.2, 0, 0))
+    mesh_goal.move(glm.vec3(-0.1, -0.04, 0.14))
+    mesh_goal.center = glm.vec3(-0.1, -0.04, 0.14)
+    print(mesh_goal.get_position())
+
+    #ice
+    mesh_ice.grow(glm.vec3(3, 2, 0))
+    mesh_ice.move(glm.vec3(-0.2, 0, 0))
+    mesh_ice.rotate(glm.vec3(0.1, 0, 0))
+
+    #puck
+    puck.move(glm.vec3(0, 0, 1))
+
     # Only draw wireframes.
     glEnable(GL_DEPTH_TEST)
     keys_down = set()
@@ -107,11 +132,11 @@ if __name__ == "__main__":
             mesh.rotate(glm.vec3(0, 0.001, 0))
         elif pygame.K_LEFT in keys_down:
             mesh.rotate(glm.vec3(0, -0.001, 0))
-        #elif pygame.K_a in keys_down:
-        #    light.move(glm.vec3(-0.001, 0, 0))
-        #    renderer.set_uniform("pointPosition", light.position, glm.vec3)
-        #elif pygame.K_d in keys_down:
-        #    light.move(glm.vec3(0.001, 0, 0))
+        elif pygame.K_a in keys_down:
+            light.move(glm.vec3(-0.001, 0, 0))
+            renderer.set_uniform("pointPosition", light.position, glm.vec3)
+        elif pygame.K_d in keys_down:
+            light.move(glm.vec3(0.001, 0, 0))
         elif pygame.K_SPACE in keys_down:
             spin = not spin
 
@@ -125,7 +150,7 @@ if __name__ == "__main__":
         # mesh.rotate(glm.vec3(0.01, 0.01, 0.01))
         # Render the scene given the perspective and camera matrices.
         renderer.set_uniform("pointColor", glm.vec3(1, 1, 0), glm.vec3)
-        renderer.render(perspective, camera, [mesh])
+        renderer.render(perspective, camera, [mesh, mesh_goal, mesh_ice, puck, mesh_stick])
         renderer.set_uniform("pointColor", glm.vec3(0, 0, 0), glm.vec3)
         renderer.render(perspective, camera, [light])
 
