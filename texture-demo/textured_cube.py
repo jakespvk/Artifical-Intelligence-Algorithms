@@ -28,7 +28,10 @@ def load_shader_source(filename):
         return f.read()
 
 
-
+last_time = 0
+now = time.perf_counter()
+tick_amount = now - last_time
+last_time = now
 if __name__ == "__main__":
     pygame.init()
     screen_width = 2800
@@ -45,7 +48,7 @@ if __name__ == "__main__":
     mesh_ice = load_textured_obj("models/cube.obj", "models/rink_pic.jpg")
     mesh = load_textured_obj("models/bunny_textured.obj", "models/bunny_textured.jpg")
     puck = load_textured_obj("models/puck.obj", "models/black.png")
-    mesh_stick = load_textured_obj("models/stick.obj", "models/white.png")
+    stick = load_textured_obj("models/stick.obj", "models/red.jpg")
     broom = load_textured_obj("models/broom.obj", "models/red.jpg")
     
     vertex_shader = shaders.compileShader(
@@ -88,60 +91,48 @@ if __name__ == "__main__":
 
     #puck
     puck.grow(glm.vec3(0.0005, 0.0005, 0.0005))
-    puck.move(glm.vec3(-0.8, -0.6, 0))
-    puck.rotate(glm.vec3(0.5, 0, 0))
+    puck.move(glm.vec3(-0.3, -0.6, 0))
+    puck.rotate(glm.vec3(0.4, 0, 0))
+
+    #stick
+    stick.grow(glm.vec3(0.01, 0.01, 0.01))
+    stick.move(glm.vec3(-0.1, -0.7, 0))
+    stick.rotate(glm.vec3(-0.7, 0.0, 0))
     
-    #broom
-    broom.move(glm.vec3(0, 0, -0.001))
-    
-    PUCK_SPEED = (0, 0.0001, -0.001)
+    SHOT = False
+    def shoot_puck():
+        for _ in range(19469):
+            puck.move(glm.vec3(0, 0.00003, 0))
+            puck.grow(glm.vec3(0.9999, 0.9999, 0.9999))
+
+    def shoot_puck_testing():
+        for _ in range(19469):
+            puck.move(glm.vec3(0, 0.00001, 0))
+            puck.grow(glm.vec3(0.9999, 0.9999, 0.9999))
 
     while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
             elif event.type == pygame.KEYDOWN:
+                if (SHOT == False) and (event.key == pygame.K_SPACE):
+                    shoot_puck()
+                    SHOT = True
                 keys_down.add(event.dict["key"])
             elif event.type == pygame.KEYUP:
                 keys_down.remove(event.dict["key"])
 
-        if pygame.K_w in keys_down:
-            mesh.move(glm.vec3(0, 0.001, 0))
         if pygame.K_a in keys_down:
-            mesh.move(glm.vec3(-0.001, 0, 0))
-        if pygame.K_s in keys_down:
-            mesh.move(glm.vec3(0, -0.001, 0))
+            puck.move(glm.vec3(-0.001, 0, 0))
+            stick.move(glm.vec3(-0.001, 0, 0))
         if pygame.K_d in keys_down:
-            mesh.move(glm.vec3(0.001, 0, 0))
-        if pygame.K_UP in keys_down:
-            mesh.rotate(glm.vec3(-0.1, 0, 0))
-        elif pygame.K_DOWN in keys_down:
-            mesh.rotate(glm.vec3(0.1, 0, 0))
-        if pygame.K_RIGHT in keys_down:
-            mesh.rotate(glm.vec3(0, 0.1, 0))
-        elif pygame.K_LEFT in keys_down:
-            mesh.rotate(glm.vec3(0, -0.1, 0))
-
-        #finding stick
-        if pygame.K_MINUS in keys_down:
-            mesh.grow(glm.vec3(0.8, 0.8, 0.8))
-        if pygame.K_PLUS in keys_down:
-            mesh.grow(glm.vec3(1.1, 1.1, 1.1))
-        if pygame.K_z in keys_down:
-            mesh.move(glm.vec3(0, 0, 0.01))
-        if pygame.K_x in keys_down:
-            mesh.move(glm.vec3(0, 0, -0.01))
-
-        # animation?
-        if pygame.K_SPACE in keys_down:
-            mesh.move(glm.vec3(PUCK_SPEED[0], PUCK_SPEED[1], PUCK_SPEED[2]))
-            mesh.grow(glm.vec3(0.9999, 0.9999, 0))
-                               
+            puck.move(glm.vec3(0.001, 0, 0))
+            stick.move(glm.vec3(0.001, 0, 0))
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # Render the scene given the perspective and camera matrices.
-        renderer.render(perspective, camera, [mesh, mesh_goal, mesh_ice, puck, mesh_stick, broom])
+        renderer.render(perspective, camera, [mesh_goal, mesh_ice, puck, stick])
         #renderer.render(perspective, camera, [puck])
 
         pygame.display.flip()

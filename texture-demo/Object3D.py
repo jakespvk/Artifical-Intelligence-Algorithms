@@ -11,13 +11,17 @@ class Object3D:
         position: glm.vec3 = glm.vec3(0.0, 0.0, 0.0),
         orientation: glm.vec3 = glm.vec3(0.0, 0.0, 0.0),
         scale: glm.vec3 = glm.vec3(1.0, 1.0, 1.0),
-        center: glm.vec3 = glm.vec3(0, 0, 0)
+        center: glm.vec3 = glm.vec3(0, 0, 0),
+        velocity: glm.vec3 = glm.vec3(0, 0.00001, 0),
+        acceleration: glm.vec3 = glm.vec3(0, 0, 0)
     ):
         self.mesh = mesh
         self.position = position
         self.orientation = orientation
         self.scale = scale
         self.center = center
+        self.velocity = velocity
+        self.acceleration = acceleration
         self._refresh_model_matrix()
 
     def move(self, offset: glm.vec3):
@@ -98,3 +102,14 @@ class Object3D:
 
     def draw(self):
         self.mesh.draw()
+
+
+
+    def tick(self, time_delta):
+        self.velocity += self.acceleration * time_delta
+        self.position += self.velocity * time_delta
+        #self.orientation += self.angular_velocity * time_delta
+        self._refresh_model_matrix()
+    
+        #for c in self.children:
+        #    c.tick(time_delta)

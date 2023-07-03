@@ -76,7 +76,7 @@ class Mesh3D:
         )
 
         if texture is not None:
-            texture_location = 2
+            texture_location = 1
             glEnableVertexAttribArray(texture_location)
             # Tell OpenGL that the texCorod of each vertex is 2 floats in size,
             # and is found by skipping 12 bytes at the start of the vertex.

@@ -57,11 +57,11 @@ if __name__ == "__main__":
     # On Mac, we were getting errors when compiling shaders before loading a mesh.
     #mesh_rink = load_textured_obj("models/hockey_rink.obj", "models/rink_pic.jpg")
     mesh_goal = load_textured_obj("models/goal.obj", "models/white.jpg")
-    #mesh_ice = load_textured_obj("models/cube.obj", "models/rink_pic.jpg")
-    rink = load_textured_obj("models/mini_ice_rink.obj", "models/ice_texture.jpg")
+    mesh_ice = load_textured_obj("models/cube.obj", "models/rink_pic.jpg")
+    #rink = load_textured_obj("models/mini_ice_rink.obj", "models/ice_texture.jpg")
     #mesh = load_textured_obj("models/bunny_textured.obj", "models/bunny_textured.jpg")
-    puck = load_textured_obj("models/puck.obj", "models/white.jpg")
-    mesh_stick = load_textured_obj("models/stick.obj", "models/white.jpg")
+    puck = load_textured_obj("models/puck.obj", "models/black.png")
+    mesh_stick = load_textured_obj("models/stick.obj", "models/red.jpg")
     broom = load_textured_obj("models/Broom.obj", "models/white.jpg")
 
     light = load_textured_obj("models/cube.obj", "models/wall.jpg")
@@ -86,6 +86,19 @@ if __name__ == "__main__":
     shader_no_lighting = shaders.compileProgram(vertex_shader, fragment_shader)
     
     renderer = RenderProgram()
+
+    #separate renderer for background
+    #vertex_shader2 = shaders.compileShader(
+    #        load_shader_source("shaders/textured_perspective.vert"), GL_FRAGMENT_SHADER
+    #        )
+    #fragment_shader2 = shaders.compileShader(
+    #        load_shader_source("shaders/texture_mapped.frag"), GL_FRAGMENT_SHADER
+    #        )
+    #shader_no_transform = shaders.compileProgram(vertex_shader2, fragment_shader2)
+    ##will this work??? in the other one it's:
+    ## renderer2 = RenderProgram(shader_no_transform)
+    #renderer2 = RenderProgram(shader_no_transform)
+
     # Define the scene.
     camera = glm.lookAt(glm.vec3(0, 0, 3), glm.vec3(0, 0, 0), glm.vec3(0, 1, 0))
     perspective = glm.perspective(
@@ -121,9 +134,9 @@ if __name__ == "__main__":
     mesh_goal.move(glm.vec3(-0.1, -0.04, 0.14))
 
     #ice
-    #mesh_ice.grow(glm.vec3(3, 2, 0))
-    #mesh_ice.move(glm.vec3(-0.2, 0, 0))
-    #mesh_ice.rotate(glm.vec3(0.1, 0, 0))
+    mesh_ice.grow(glm.vec3(3, 2, 0))
+    mesh_ice.move(glm.vec3(-0.2, 0, 0))
+    mesh_ice.rotate(glm.vec3(0.1, 0, 0))
 
     #rink
     #rink.grow(glm.vec3(3, 2, 0))
@@ -131,38 +144,48 @@ if __name__ == "__main__":
     #rink.rotate(glm.vec3(0.1, 0, 0))
 
     #puck
-    #puck.move(glm.vec3(-0.8, -0.8, 0))
-    puck.grow(glm.vec3(0.001, 0.001, 0.001))
+    puck.grow(glm.vec3(0.0005, 0.0005, 0.0005))
+    puck.move(glm.vec3(-0.3, -0.6, 0))
+    puck.rotate(glm.vec3(0.4, 0, 0))
 
     #broom 
     broom.grow(glm.vec3(0.02, 0.02, 0.02))
 
     #stick
-    mesh_stick.grow(glm.vec3(0.005, 0.005, 0.005))
-    mesh_stick.move(glm.vec3(0, -0.5, 0.5))
+    mesh_stick.grow(glm.vec3(0.01, 0.01, 0.01))
+    mesh_stick.move(glm.vec3(-0.1, -0.7, 0))
+    mesh_stick.rotate(glm.vec3(-0.7, 0.0, 0))
 
-    #rink
-    rink.grow(glm.vec3(0.008, 0.008, 0.008))
-    rink.rotate(glm.vec3(0.25, 0, 0))
-    rink.move(glm.vec3(0, -1.0, -1))
+    SHOT = False
+    def shoot_puck():
+        for _ in range(19469):
+            puck.move(glm.vec3(0, 0.00003, 0))
+            puck.grow(glm.vec3(0.9999, 0.9999, 0.9999))
+
+    def shoot_puck_testing():
+        for _ in range(19469):
+            puck.move(glm.vec3(0, 0.00001, 0))
+            puck.grow(glm.vec3(0.9999, 0.9999, 0.9999))
+
 
     while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
             elif event.type == pygame.KEYDOWN:
+                if (SHOT == False) and (event.key == pygame.K_SPACE):
+                    shoot_puck()
+                    SHOT = True
                 keys_down.add(event.dict["key"])
             elif event.type == pygame.KEYUP:
                 keys_down.remove(event.dict["key"])
 
-        if pygame.K_UP in keys_down:
-            bunny.rotate(glm.vec3(-0.001, 0, 0))
-        elif pygame.K_DOWN in keys_down:
-            bunny.rotate(glm.vec3(0.001, 0, 0))
-        if pygame.K_RIGHT in keys_down:
-            bunny.rotate(glm.vec3(0, 0.001, 0))
-        elif pygame.K_LEFT in keys_down:
-            bunny.rotate(glm.vec3(0, -0.001, 0))
+        if pygame.K_a in keys_down:
+            puck.move(glm.vec3(-0.001, 0, 0))
+            mesh_stick.move(glm.vec3(-0.001, 0, 0))
+        if pygame.K_d in keys_down:
+            puck.move(glm.vec3(0.001, 0, 0))
+            mesh_stick.move(glm.vec3(0.001, 0, 0))
         elif pygame.K_l in keys_down:
            light.move(glm.vec3(-0.001, 0, 0))
            renderer.set_uniform("pointPosition", light.position, glm.vec3)
@@ -183,10 +206,7 @@ if __name__ == "__main__":
         # Draw the bunny with lighting.
         renderer.use_program(shader_lighting)
         renderer.set_uniform("pointPosition", light.get_position(), glm.vec3)
-        #renderer.render(perspective, camera, [bunny])
-        #renderer.render(perspective, camera, [bunny, mesh_goal, rink, broom, mesh_stick])
-        
-        renderer.render(perspective, camera, [mesh_stick, rink, puck])
+        renderer.render(perspective, camera, [mesh_stick, mesh_goal, puck, mesh_ice])
    
         # Draw the light source without lighting itself.
         renderer.use_program(shader_no_lighting)
