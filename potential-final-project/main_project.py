@@ -34,8 +34,8 @@ def load_shader_source(filename):
 if __name__ == "__main__":
     pygame.init()
     
-    screen_width = 2800
-    screen_height = 1800
+    screen_width = 1500
+    screen_height = 800
     # For Mac people.
     #pygame.display.gl_set_attribute(GL_CONTEXT_MAJOR_VERSION, 4)
     #pygame.display.gl_set_attribute(GL_CONTEXT_MINOR_VERSION, 1)
