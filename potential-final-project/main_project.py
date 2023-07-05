@@ -34,8 +34,8 @@ def load_shader_source(filename):
 if __name__ == "__main__":
     pygame.init()
     
-    screen_width = 1500
-    screen_height = 800
+    screen_width = 2600
+    screen_height = 1800
     # For Mac people.
     #pygame.display.gl_set_attribute(GL_CONTEXT_MAJOR_VERSION, 4)
     #pygame.display.gl_set_attribute(GL_CONTEXT_MINOR_VERSION, 1)
@@ -70,6 +70,11 @@ if __name__ == "__main__":
     light.center_point(glm.vec3(0, 0, -10))
     light.move(glm.vec3(0, 0, -1))
     light.grow(glm.vec3(0.01, 0.01, 0.01))
+
+    spotlight = load_textured_obj("models/cube.obj", "models/wall.jpg")
+    spotlight.center_point(glm.vec3(0, 0, -10))
+    spotlight.move(glm.vec3(0, 1, 1))
+    spotlight.grow(glm.vec3(0.01, 0.01, 0.01))
 
     # Load the vertex and fragment shaders for this program.
     vertex_shader = shaders.compileShader(
@@ -111,15 +116,16 @@ if __name__ == "__main__":
     # Initialize lighting parameters.
     ambient_color = glm.vec3(1, 1, 1)
     ambient_intensity = 0.3
-    point_position = glm.vec3(0.0, 1.0, -0.1)
+    point_position = glm.vec3(0.0, 0.0, 0.1)
     renderer.set_uniform("ambientColor", ambient_color * ambient_intensity, glm.vec3)
     renderer.set_uniform("pointPosition", point_position, glm.vec3)
     renderer.set_uniform("pointColor", glm.vec3(1, 1, 1), glm.vec3)
     renderer.set_uniform("viewVector", glm.vec3(0, 0, 0), glm.vec3)
-    renderer.set_uniform("direction", glm.vec3(-0.2, 0.7, 0.05), glm.vec3)
+    #renderer.set_uniform("direction", glm.vec3(-0.2, 0.7, 0.05), glm.vec3)
+    renderer.set_uniform("direction", glm.vec3(-0.2, -0.6, 0.0), glm.vec3)
     renderer.set_uniform("pointLightArgs", glm.vec3(1, 0.09, 0.032), glm.vec3)
     renderer.set_uniform("spotlightPos", glm.vec3(0, 1.0, 0.0), glm.vec3)
-    renderer.set_uniform("spotlightDir", glm.vec3(-0.1, -0.04, 0.14), glm.vec3)
+    renderer.set_uniform("spotlightDir", glm.vec3(-0.1, -0.04, -0.14), glm.vec3)
     renderer.set_uniform("spotlightCutoff", glm.cos(math.radians(2.5)), glm.cos)
 
 
@@ -190,20 +196,22 @@ if __name__ == "__main__":
                 keys_down.remove(event.dict["key"])
 
         if (i < 389) and (SHOT == True):
+            mesh_stick.move(glm.vec3(0, 0.01, 0))
+            mesh_stick.rotate(glm.vec3(0, 0.01, 0))
             shoot_puck()
             i += 1
 
         if (SHOT == False) and (pygame.K_a in keys_down):
-            puck.move(glm.vec3(-0.001, 0, 0))
-            mesh_stick.move(glm.vec3(-0.001, 0, 0))
+            puck.move(glm.vec3(-0.005, 0, 0))
+            mesh_stick.move(glm.vec3(-0.005, 0, 0))
         elif (SHOT == False) and (pygame.K_d in keys_down):
-            puck.move(glm.vec3(0.001, 0, 0))
-            mesh_stick.move(glm.vec3(0.001, 0, 0))
-        elif (SHOT == False) and (pygame.K_l in keys_down):
-           light.move(glm.vec3(-0.001, 0, 0))
+            puck.move(glm.vec3(0.005, 0, 0))
+            mesh_stick.move(glm.vec3(0.005, 0, 0))
+        elif (pygame.K_l in keys_down):
+           light.move(glm.vec3(-0.01, 0, 0))
            renderer.set_uniform("pointPosition", light.position, glm.vec3)
-        elif (SHOT == False) and (pygame.K_h in keys_down):
-           light.move(glm.vec3(0.001, 0, 0))
+        elif (pygame.K_h in keys_down):
+           light.move(glm.vec3(0.01, 0, 0))
            renderer.set_uniform("pointPosition", light.position, glm.vec3)
         #elif pygame.K_j in keys_down:
         #   light.move(glm.vec3(0, -0.005, 0))
@@ -220,10 +228,10 @@ if __name__ == "__main__":
         renderer.use_program(shader_lighting)
         renderer.set_uniform("pointPosition", light.get_position(), glm.vec3)
 
-        renderer.render(perspective, camera, glm.vec4(0.5, 0.5, 0.8, 32.0), [mesh_stick])
-        renderer.render(perspective, camera, glm.vec4(0.5, 0.5, 0.8, 32.0), [puck])
-        renderer.render(perspective, camera, glm.vec4(0.8, 0.8, 0.8, 32.0), [mesh_goal])
-        renderer.render(perspective, camera, glm.vec4(0.5, 0.5, 0.8, 32.0), [mesh_ice])
+        renderer.render(perspective, camera, glm.vec4(1.0, 0.2, 1.0, 32.0), [mesh_stick])
+        renderer.render(perspective, camera, glm.vec4(1.0, 0.2, 1.0, 2.0), [puck])
+        renderer.render(perspective, camera, glm.vec4(1.0, 0.2, 1.0, 22.0), [mesh_goal])
+        renderer.render(perspective, camera, glm.vec4(1.0, 0.9, 1.0, 28.0), [mesh_ice])
    
         #renderer.render(perspective, camera, glm.vec4(0.0, 0.0, 0.0, 32.0), [mesh_stick])
         #renderer.render(perspective, camera, glm.vec4(0.0, 0.0, 0.0, 32.0), [puck])
@@ -233,6 +241,7 @@ if __name__ == "__main__":
         # Draw the light source without lighting itself.
         renderer.use_program(shader_no_lighting)
         renderer.render(perspective, camera, glm.vec4(0.0, 0.0, 0.0, 0.0), [light])
+        #renderer.render(perspective, camera, glm.vec4(0.0, 0.0, 0.0, 0.0), [spotlight])
 
         pygame.display.flip()
         end = time.perf_counter()

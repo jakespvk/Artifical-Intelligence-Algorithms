@@ -34,8 +34,8 @@ tick_amount = now - last_time
 last_time = now
 if __name__ == "__main__":
     pygame.init()
-    screen_width = 2800
-    screen_height = 1800
+    screen_width = 1500
+    screen_height = 800
     screen = pygame.display.set_mode(
         (screen_width, screen_height),
         DOUBLEBUF | OPENGL,
